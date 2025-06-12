@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: web-app
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000  # Render requires ports between 10000-60000
+    healthCheckPath: /
+    autoDeploy: true
