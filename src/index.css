@@ -1,0 +1,124 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --background: 220 20% 8%;
+  --foreground: 120 100% 85%;
+  --card: 220 25% 12%;
+  --card-foreground: 120 100% 90%;
+  --popover: 220 25% 12%;
+  --popover-foreground: 120 100% 90%;
+  --primary: 120 100% 50%;
+  --primary-foreground: 220 20% 8%;
+  --secondary: 180 100% 25%;
+  --secondary-foreground: 120 100% 90%;
+  --muted: 220 15% 20%;
+  --muted-foreground: 120 50% 70%;
+  --accent: 280 100% 70%;
+  --accent-foreground: 220 20% 8%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 120 30% 25%;
+  --input: 220 25% 15%;
+  --ring: 120 100% 50%;
+  --radius: 0.75rem;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #0a0a0f 100%);
+  color: hsl(var(--foreground));
+  font-family: 'Space Grotesk', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.space-bg {
+  background: radial-gradient(ellipse at center, rgba(0, 255, 127, 0.1) 0%, transparent 70%),
+              radial-gradient(ellipse at 80% 20%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
+              radial-gradient(ellipse at 20% 80%, rgba(0, 191, 255, 0.1) 0%, transparent 50%);
+}
+
+.neon-glow {
+  box-shadow: 0 0 20px rgba(0, 255, 127, 0.3),
+              0 0 40px rgba(0, 255, 127, 0.2),
+              0 0 60px rgba(0, 255, 127, 0.1);
+}
+
+.neon-text {
+  text-shadow: 0 0 10px rgba(0, 255, 127, 0.8),
+               0 0 20px rgba(0, 255, 127, 0.6),
+               0 0 30px rgba(0, 255, 127, 0.4);
+}
+
+.cyber-grid {
+  background-image: 
+    linear-gradient(rgba(0, 255, 127, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 127, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+.hologram {
+  background: linear-gradient(45deg, 
+    rgba(0, 255, 127, 0.1) 0%, 
+    rgba(138, 43, 226, 0.1) 25%, 
+    rgba(0, 191, 255, 0.1) 50%, 
+    rgba(255, 20, 147, 0.1) 75%, 
+    rgba(0, 255, 127, 0.1) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 255, 127, 0.3);
+}
+
+.floating {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes pulseGlow {
+  from { box-shadow: 0 0 20px rgba(0, 255, 127, 0.3); }
+  to { box-shadow: 0 0 40px rgba(0, 255, 127, 0.6); }
+}
+
+.brand-font {
+  font-family: 'Orbitron', monospace;
+  font-weight: 800;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tech-border {
+  position: relative;
+  border: 2px solid transparent;
+  background: linear-gradient(45deg, rgba(0, 255, 127, 0.3), rgba(138, 43, 226, 0.3)) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+}
