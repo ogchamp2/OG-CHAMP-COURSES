@@ -62,8 +62,12 @@ const PremiumOffersGrid = () => {
           {offers.map((offer, index) => (
             <motion.div key={offer.id} initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
               <Card className="hologram neon-glow h-full hover:shadow-2xl transition-all duration-300 border-yellow-500/30 flex flex-col">
-                {offer.image_url && (
-                    <img-replace src={offer.image_url} alt={offer.title} className="w-full h-48 object-cover"/>
+                {offer.image_url ? (
+                    <img src={offer.image_url} alt={offer.title} className="w-full h-48 object-cover rounded-t-md" />
+                ) : (
+                  <div className="w-full h-48 bg-black/30 rounded-t-md flex items-center justify-center">
+                    <Crown className="w-16 h-16 text-yellow-500/50" />
+                  </div>
                 )}
                 <CardHeader>
                   <CardTitle className="text-yellow-300 text-xl">{offer.title}</CardTitle>
