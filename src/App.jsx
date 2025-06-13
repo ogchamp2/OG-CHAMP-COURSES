@@ -11,7 +11,8 @@ import AdminPanel from '@/components/AdminPanel';
 import PremiumPage from '@/components/PremiumPage';
 import PremiumOffersGrid from '@/components/PremiumOffersGrid';
 import EmailConfirmationPage from '@/components/EmailConfirmationPage';
-import NotificationListener from '@/components/NotificationListener';
+// NotificationListener is now part of NotificationBell logic, toasts are handled there.
+// import NotificationListener from '@/components/NotificationListener'; 
 import { Button } from '@/components/ui/button';
 import { BookOpen, Crown, Settings } from 'lucide-react';
 
@@ -126,7 +127,7 @@ const AppContent = () => {
       <div className="cyber-grid absolute inset-0 opacity-10"></div>
       <Header />
       <Navigation />
-      {isAuthenticated && <NotificationListener />}
+      {/* NotificationListener functionality is now integrated into NotificationBell component, placed in Header */}
       
       <main className="pt-24 pb-24 lg:pb-8">
         <div className="container mx-auto px-4">
@@ -168,3 +169,4 @@ const App = () => {
 };
 
 export default App;
+        
