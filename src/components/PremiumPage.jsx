@@ -87,16 +87,17 @@ const PremiumPage = () => {
                 {premiumOffers.map((offer, index) => (
                   <motion.div key={offer.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + index * 0.1 }}>
                     <Card className="hologram neon-glow h-full hover:shadow-2xl transition-all duration-300 border-yellow-500/30 flex flex-col">
-                      {offer.image_url && (
-                          <img-replace src={offer.image_url} alt={offer.title} className="w-full h-48 object-cover"/>
+                      {offer.image_url ? (
+                          <img src={offer.image_url} alt={offer.title} className="w-full h-48 object-cover rounded-t-md" />
+                      ) : (
+                        <div className="w-full h-48 bg-black/30 rounded-t-md flex items-center justify-center">
+                           <div className="p-3 bg-yellow-500/20 rounded-full text-yellow-400">
+                              {index % 3 === 0 ? <Eye className="w-10 h-10"/> : index % 3 === 1 ? <Skull className="w-10 h-10"/> : <Zap className="w-10 h-10"/>}
+                           </div>
+                        </div>
                       )}
                       <CardHeader>
                         <div className="flex items-center gap-3">
-                           {!offer.image_url && (
-                             <div className="p-3 bg-yellow-500/20 rounded-full text-yellow-400">
-                                {index % 3 === 0 ? <Eye className="w-7 h-7"/> : index % 3 === 1 ? <Skull className="w-7 h-7"/> : <Zap className="w-7 h-7"/>}
-                             </div>
-                           )}
                           <CardTitle className="text-yellow-300 text-xl">{offer.title}</CardTitle>
                         </div>
                       </CardHeader>
