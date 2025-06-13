@@ -4,9 +4,10 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { LogOut, User, Settings, MessageCircle, Youtube, Phone } from 'lucide-react';
+import NotificationBell from '@/components/NotificationBell';
 
 const Header = () => {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, isAuthenticated } = useAuth();
 
   const handleWhatsAppChannel = () => {
     window.open('https://whatsapp.com/channel/0029VaAqUqGCJOuXdE0YqV1H', '_blank');
@@ -17,7 +18,7 @@ const Header = () => {
   };
 
   const handleContact = () => {
-    window.open('https://wa.me/1234567890', '_blank');
+    window.open('https://wa.me/22896342434', '_blank'); // Updated contact
   };
 
   return (
@@ -36,7 +37,7 @@ const Header = () => {
             〔𝗢𝗚 𝗖𝗛𝗔𝗠𝗣〕√ COURSE
           </motion.div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <div className="hidden md:flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -66,10 +67,12 @@ const Header = () => {
                 YouTube
               </Button>
             </div>
+            
+            {isAuthenticated && <NotificationBell />}
 
             {user && (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="hidden sm:flex items-center gap-2 text-sm">
                   <User className="w-4 h-4 text-green-400" />
                   <span className="text-green-300">{user.name}</span>
                   {isAdmin && (
@@ -80,11 +83,12 @@ const Header = () => {
                 </div>
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="icon"
                   onClick={logout}
                   className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                  aria-label="Logout"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-5 h-5" />
                 </Button>
               </div>
             )}
