@@ -296,30 +296,4 @@ const AdminPanel = () => {
         <CardHeader><CardTitle className="text-green-300">Manage User Roles</CardTitle><CardDescription className="text-green-400/80">Grant or revoke premium and admin access for users.</CardDescription></CardHeader>
         <CardContent>{isLoadingUsers ? <p className="text-purple-400/70 text-center">Loading users...</p> : usersList.map(u => (<motion.div key={u.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 my-2 bg-black/30 rounded-lg border border-purple-500/30">
             <div className="flex-1">
-                <h3 className="text-purple-300 font-semibold flex items-center gap-2 flex-wrap">
-                    <span>{u.name || 'N/A'} ({u.email})</span>
-                    {u.is_admin && <span className="text-xs font-bold text-purple-300 bg-purple-500/30 px-2 py-0.5 rounded-full">ADMIN</span>}
-                </h3>
-                <p className={`text-xs ${u.has_premium_access || u.is_admin ? 'text-yellow-400' : 'text-purple-400/60'}`}>Premium Access: {u.has_premium_access || u.is_admin ? 'Active' : 'Inactive'}</p>
-            </div>
-            <div className="flex gap-2 self-stretch sm:self-auto flex-col sm:flex-row">
-                {!u.is_admin && (
-                    <Button size="sm" onClick={() => handleTogglePremiumAccess(u.id)} className={u.has_premium_access ? "bg-red-500/80 hover:bg-red-600 text-white" : "bg-green-500/80 hover:bg-green-600 text-white"}>
-                        {u.has_premium_access ? <UserX className="w-4 h-4 mr-1" /> : <UserCheck className="w-4 h-4 mr-1" />}
-                        {u.has_premium_access ? 'Revoke Premium' : 'Grant Premium'}
-                    </Button>
-                )}
-                {user.id !== u.id && u.email !== 'ogchamptech@gmail.com' && (
-                    <Button size="sm" onClick={() => handleToggleAdminStatus(u.id)} className={u.is_admin ? "bg-orange-500/80 hover:bg-orange-600 text-white" : "bg-purple-500/80 hover:bg-purple-600 text-white"}>
-                        {u.is_admin ? <ShieldOff className="w-4 h-4 mr-1" /> : <ShieldCheck className="w-4 h-4 mr-1" />}
-                        {u.is_admin ? 'Revoke Admin' : 'Make Admin'}
-                    </Button>
-                )}
-            </div>
-        </motion.div>))} {!isLoadingUsers && usersList.length === 0 && <p className="text-purple-400/70 text-center py-4">No users found.</p>}</CardContent>
-      </Card>
-    </div>
-  );
-};
-
-export default AdminPanel;
+                <h3 className="text-purple-300 font-semibold flex items-c
