@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useCourses } from '@/hooks/useCourses';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,28 +7,66 @@ import CourseContentDialog from '@/components/CourseContentDialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, BookOpen, Crown, Lock } from 'lucide-react';
 
 const CoursesGrid = () => {
   const { courses, isLoading: coursesLoading } = useCourses();
   const { hasPremiumAccess } = useAuth();
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('search') || '');
+  const [selectedCategory, setSelectedCategory] = useState(() => searchParams.get('category') || 'all');
   const [viewingCourse, setViewingCourse] = useState(null);
 
-  const categories = ['all', ...new Set(courses.map(course => course.category).filter(Boolean))];
+  const updateUrlParams = useCallback(() => {
+    const params = new URLSearchParams(searchParams);
+    if (searchTerm.trim()) {
+      params.set('search', searchTerm.trim());
+    } else {
+      params.delete('search');
+    }
 
-  const searchedCourses = courses.filter(course => {
+    if (selectedCategory && selectedCategory !== 'all') {
+      params.set('category', selectedCategory);
+    } else {
+      params.delete('category');
+    }
+    setSearchParams(params, { replace: true });
+  }, [searchTerm, selectedCategory, setSearchParams, searchParams]);
+
+  useEffect(() => {
+    updateUrlParams();
+  }, [searchTerm, selectedCategory, updateUrlParams]);
+
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category') || 'all';
+    const searchFromUrl = searchParams.get('search') || '';
+    
+    if (categoryFromUrl !== selectedCategory) {
+      setSelectedCategory(categoryFromUrl);
+    }
+    if (searchFromUrl !== searchTerm) {
+      setSearchTerm(searchFromUrl);
+    }
+  }, [searchParams]);
+
+  const categories = ['all', ...new Set(courses.map(course => course.category).filter(Boolean).sort())];
+
+  const filteredCourses = courses.filter(course => {
     const matchesSearch = (course.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
                          (course.description?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || course.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const visibleCourses = searchedCourses.filter(course => !course.is_premium || hasPremiumAccess);
-  const lockedCourses = searchedCourses.filter(course => course.is_premium && !hasPremiumAccess);
+  const visibleCourses = filteredCourses.filter(course => !course.is_premium || hasPremiumAccess);
+  const lockedCourses = filteredCourses.filter(course => course.is_premium && !hasPremiumAccess);
+
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+  };
 
   if (coursesLoading) {
     return (
@@ -48,7 +86,7 @@ const CoursesGrid = () => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-400 w-4 h-4" />
           <Input placeholder="Search all courses..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 bg-black/50 border-green-500/50 text-green-100 placeholder:text-green-400/60"/>
         </div>
-        <div className="flex gap-2 flex-wrap">{categories.map(cat => (<Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} size="sm" onClick={() => setSelectedCategory(cat)} className={selectedCategory === cat ? "bg-green-500 hover:bg-green-600 text-white" : "border-green-500/50 text-green-300 hover:bg-green-500/20"}>{cat === 'all' ? 'All' : cat}</Button>))}</div>
+        <div className="flex gap-2 flex-wrap">{categories.map(cat => (<Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} size="sm" onClick={() => handleCategoryClick(cat)} className={`${selectedCategory === cat ? "bg-green-500 hover:bg-green-600 text-white" : "border-green-500/50 text-green-300 hover:bg-green-500/20"} capitalize`}>{cat === 'all' ? 'All Categories' : cat}</Button>))}</div>
       </motion.div>
 
       {visibleCourses.length === 0 && lockedCourses.length === 0 && (
@@ -78,7 +116,7 @@ const CoursesGrid = () => {
                 {lockedCourses.map((course, index) => (
                      <motion.div key={course.id} initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
                         <Card className="h-full hologram neon-glow hover:shadow-2xl transition-all duration-300 overflow-hidden border-yellow-500/40 opacity-70">
-                            <div className="relative"><img src={course.image_url} alt={course.title} className="w-full h-48 object-cover filter grayscale"/><div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-4"><Lock className="w-12 h-12 text-yellow-400 mb-3"/><h3 className="text-yellow-300 text-xl font-semibold text-center">{course.title}</h3><p className="text-yellow-400/80 text-sm text-center mt-1">This is a premium course.</p><Button onClick={() => navigate('/premium')} className="mt-4 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold" size="sm"><Crown className="w-4 h-4 mr-2"/> Go Premium</Button></div></div>
+                            <div className="relative"><img-replace src={course.image_url} alt={course.title} class="w-full h-48 object-cover filter grayscale"/><div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-4"><Lock className="w-12 h-12 text-yellow-400 mb-3"/><h3 className="text-yellow-300 text-xl font-semibold text-center">{course.title}</h3><p className="text-yellow-400/80 text-sm text-center mt-1">This is a premium course.</p><Button onClick={() => navigate('/premium')} className="mt-4 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold" size="sm"><Crown className="w-4 h-4 mr-2"/> Go Premium</Button></div></div>
                         </Card>
                      </motion.div>
                 ))}
