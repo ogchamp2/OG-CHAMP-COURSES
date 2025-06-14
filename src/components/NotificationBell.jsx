@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
-import { Bell } from 'lucide-react';
+import { Bell, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,7 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const MAX_NOTIFICATIONS_DISPLAYED = 10;
 
 const NotificationBell = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
@@ -31,18 +32,23 @@ const NotificationBell = () => {
   const fetchInitialNotifications = useCallback(async () => {
     if (!user) return;
     try {
-      const { data: unreadData, error: unreadError, count: unreadMessagesCount } = await supabase
+      // Fetch unread count
+      const { count: unreadMessagesCount, error: unreadError } = await supabase
         .from('notifications')
-        .select('*', { count: 'exact', head: false })
+        .select('*', { count: 'exact', head: true })
         .gt('created_at', lastReadTimestamp)
-        .order('created_at', { ascending: false });
+        .is('deleted_at', null)
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
 
       if (unreadError) throw unreadError;
       setUnreadCount(unreadMessagesCount || 0);
 
+      // Fetch recent notifications for display
       const { data: recentData, error: recentError } = await supabase
         .from('notifications')
         .select('*')
+        .is('deleted_at', null)
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
         .order('created_at', { ascending: false })
         .limit(MAX_NOTIFICATIONS_DISPLAYED);
       
@@ -63,49 +69,45 @@ const NotificationBell = () => {
     if (!user) return;
 
     const channel = supabase
-      .channel('public:notifications:bell-v2')
+      .channel('public:notifications:bell-v3')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications' },
+        { event: '*', schema: 'public', table: 'notifications' },
         (payload) => {
-          const newNotification = payload.new;
+          // Refetch all notifications to correctly handle inserts, updates (soft deletes), and expiry
+          fetchInitialNotifications();
           
-          setNotifications((prevNotifications) => 
-            [newNotification, ...prevNotifications].slice(0, MAX_NOTIFICATIONS_DISPLAYED)
-          );
-
-          if (new Date(newNotification.created_at) > new Date(lastReadTimestamp)) {
-            setUnreadCount((prevCount) => prevCount + 1);
+          // Show toast only for new, non-deleted, non-expired notifications
+          if (payload.eventType === 'INSERT') {
+            const newNotification = payload.new;
+            if (!newNotification.deleted_at && (!newNotification.expires_at || new Date(newNotification.expires_at) > new Date())) {
+              toast({
+                title: (
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-5 w-5 text-yellow-400" />
+                    <span className="font-bold text-yellow-300">{newNotification.title}</span>
+                  </div>
+                ),
+                description: <p className="text-green-200">{newNotification.message}</p>,
+                className: 'hologram neon-glow border-yellow-500/50',
+              });
+            }
           }
-          
-          toast({
-            title: (
-              <div className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-yellow-400" />
-                <span className="font-bold text-yellow-300">{newNotification.title}</span>
-              </div>
-            ),
-            description: <p className="text-green-200">{newNotification.message}</p>,
-            className: 'hologram neon-glow border-yellow-500/50',
-          });
         }
       )
       .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Subscribed to notifications channel!');
+          console.log('Subscribed to notifications channel (v3)!');
         }
         if (status === 'CHANNEL_ERROR') {
-          console.error('Channel error:', err);
-        }
-        if (status === 'TIMED_OUT') {
-          console.warn('Subscription timed out');
+          console.error('Channel error (v3):', err);
         }
       });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, lastReadTimestamp, toast]);
+  }, [user, toast, fetchInitialNotifications]); // Added fetchInitialNotifications dependency
 
   useEffect(() => {
     if(user && typeof window !== 'undefined') {
@@ -122,8 +124,7 @@ const NotificationBell = () => {
         localStorage.setItem(`lastReadTimestamp_${user.id}`, newTimestamp);
       }
     }
-    // Re-fetch to ensure the list is up-to-date when opened, even if no new unread.
-    fetchInitialNotifications();
+    fetchInitialNotifications(); // Refresh list on open
   };
   
   const timeSince = (date) => {
@@ -139,7 +140,26 @@ const NotificationBell = () => {
     interval = seconds / 60;
     if (interval > 1) return Math.floor(interval) + "m ago";
     return Math.floor(seconds) + "s ago";
-  }
+  };
+
+  const handleDeleteNotificationBell = async (notificationId, e) => {
+    e.stopPropagation(); // Prevent dropdown from closing
+    if (!isAdmin) {
+      toast({ title: "Unauthorized", description: "Only admins can delete notifications.", variant: "destructive" });
+      return;
+    }
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', notificationId);
+      if (error) throw error;
+      toast({ title: "Success", description: "Notification hidden." });
+      fetchInitialNotifications(); // Refresh the list
+    } catch (error) {
+      toast({ title: "Error", description: `Failed to hide notification: ${error.message}`, variant: "destructive" });
+    }
+  };
 
 
   if (!user) return null;
@@ -180,21 +200,29 @@ const NotificationBell = () => {
             <DropdownMenuItem key={notification.id} className="flex flex-col items-start gap-1 p-3 focus:bg-green-500/10 focus:text-green-300 cursor-default">
               <div className="flex justify-between w-full items-center">
                 <span className="font-semibold text-green-200">{notification.title}</span>
-                <span className="text-xs text-green-500">{timeSince(notification.created_at)}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-green-500">{timeSince(notification.created_at)}</span>
+                  {isAdmin && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                      onClick={(e) => handleDeleteNotificationBell(notification.id, e)}
+                      title="Hide notification"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
               </div>
               <p className="text-sm text-green-400/90 whitespace-normal">{notification.message}</p>
             </DropdownMenuItem>
           ))
         )}
-        {/* Placeholder for a "View All" link if you have many notifications */}
-        {/* {notifications.length >= MAX_NOTIFICATIONS_DISPLAYED && (
-           <DropdownMenuItem className="text-center text-green-400 hover:underline focus:bg-green-500/10 focus:text-green-300">
-             View all notifications (coming soon)
-           </DropdownMenuItem>
-        )} */}
       </DropdownMenuContent>
     </DropdownMenu>
   );
 };
 
 export default NotificationBell;
+                
