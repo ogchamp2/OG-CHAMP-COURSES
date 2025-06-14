@@ -1,18 +1,16 @@
 
 import React from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/Header';
 import AuthForm from '@/components/AuthForm';
 import CoursesGrid from '@/components/CoursesGrid';
-import AdminPanel from '@/components/AdminPanel';
+import AdminPanel from '@/components/AdminPanel/index';
 import PremiumPage from '@/components/PremiumPage';
 import PremiumOffersGrid from '@/components/PremiumOffersGrid';
 import EmailConfirmationPage from '@/components/EmailConfirmationPage';
-// NotificationListener is now part of NotificationBell logic, toasts are handled there.
-// import NotificationListener from '@/components/NotificationListener'; 
 import { Button } from '@/components/ui/button';
 import { BookOpen, Crown, Settings } from 'lucide-react';
 
@@ -127,13 +125,12 @@ const AppContent = () => {
       <div className="cyber-grid absolute inset-0 opacity-10"></div>
       <Header />
       <Navigation />
-      {/* NotificationListener functionality is now integrated into NotificationBell component, placed in Header */}
       
       <main className="pt-24 pb-24 lg:pb-8">
         <div className="container mx-auto px-4">
           <AnimatePresence mode="wait">
             <motion.div
-              key={location.pathname}
+              key={location.pathname + location.search} 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -169,4 +166,4 @@ const App = () => {
 };
 
 export default App;
-        
+                
