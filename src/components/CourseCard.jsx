@@ -97,11 +97,10 @@ const CourseCard = ({ course, hasPremiumAccess, onViewContent }) => {
     >
       <Card className="h-full hologram neon-glow hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col">
         <div className="relative">
-          {/* Updated: Now using course.image_url instead of hardcoded URL */}
-          <img 
+          <img
             alt={course.title || "Course image"}
             className="w-full h-48 object-cover"
-            src={course.image_url || "https://images.unsplash.com/photo-1582177199344-a05724b6e775"} 
+            src={course.image_url || "https://images.unsplash.com/photo-1582177199344-a05724b6e775?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"} 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
@@ -116,7 +115,6 @@ const CourseCard = ({ course, hasPremiumAccess, onViewContent }) => {
           </div>
         </div>
 
-        {/* Rest of your component remains the same */}
         <CardHeader>
           <CardTitle className="text-green-300 text-xl">{course.title}</CardTitle>
           <CardDescription className="text-green-400/80 line-clamp-2 h-[40px]">
