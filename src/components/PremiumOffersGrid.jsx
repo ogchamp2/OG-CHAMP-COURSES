@@ -63,7 +63,17 @@ const PremiumOffersGrid = () => {
             <motion.div key={offer.id} initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
               <Card className="hologram neon-glow h-full hover:shadow-2xl transition-all duration-300 border-yellow-500/30 flex flex-col">
                 {offer.image_url ? (
-                    <img src={offer.image_url} alt={offer.title} className="w-full h-48 object-cover rounded-t-md" />
+                  <div className="w-full h-48 overflow-hidden rounded-t-md">
+                    <img 
+                      src={offer.image_url} 
+                      alt={offer.title} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null; 
+                        e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%' viewBox='0 0 800 400'%3E%3Crect fill='%23222222' width='800' height='400'/%3E%3Ctext fill='%23ffffff' font-family='sans-serif' font-size='16' x='50%' y='50%' dominant-baseline='middle' text-anchor='middle'%3EImage not available%3C/text%3E%3C/svg%3E";
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div className="w-full h-48 bg-black/30 rounded-t-md flex items-center justify-center">
                     <Crown className="w-16 h-16 text-yellow-500/50" />
