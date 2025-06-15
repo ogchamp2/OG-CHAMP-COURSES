@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -44,7 +45,7 @@ const ManageCourses = ({ isAdmin }) => {
     setCourseFormData({ 
         title: course.title, 
         description: course.description, 
-        imageUrl: course.image_url,
+        imageUrl: course.image_url, // Use image_url from course object
         download_url: course.download_url || '',
         video_url: course.video_url || '',
         category: course.category || '', 
@@ -89,7 +90,7 @@ const ManageCourses = ({ isAdmin }) => {
         {!coursesLoading && courses.length === 0 && <p className="text-green-400/70 text-center">No courses available.</p>}
         {!coursesLoading && courses.map(course => (
           <motion.div key={course.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-4 p-3 my-2 bg-black/30 rounded-lg border border-green-500/30">
-            <img-replace src={course.image_url} alt={course.title} class="w-12 h-12 object-cover rounded" /> 
+            <img-replace src={course.image_url || 'default_admin_course_thumb.png'} alt={course.title || "Course Thumbnail"} class="w-12 h-12 object-cover rounded" /> 
             <div className="flex-1">
               <h3 className="text-green-300 font-semibold">{course.title} {course.is_premium && <Crown className="inline w-4 h-4 ml-1 text-yellow-400" />}</h3>
               <p className="text-xs text-green-400/60">{course.category || 'Uncategorized'} - ${course.price}</p>
