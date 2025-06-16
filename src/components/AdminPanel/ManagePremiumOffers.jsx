@@ -30,7 +30,7 @@ const ManagePremiumOffers = ({ offers, isLoading, fetchOffers, isAdmin }) => {
         if (editingPremiumOffer) {
             await supabase.from('premium_offers').update({ ...premiumOfferFormData, updated_at: new Date().toISOString() }).eq('id', editingPremiumOffer.id).throwOnError();
         } else {
-            await supabase.from('premium_offers').insert([premiumOfferFormData]).throwOnError();
+            await supabase.from('premium_offers').insert([{ ...premiumOfferFormData, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }]).throwOnError();
         }
         resetPremiumOfferForm();
         setIsPremiumOfferDialogOpen(false);
@@ -90,7 +90,17 @@ const ManagePremiumOffers = ({ offers, isLoading, fetchOffers, isAdmin }) => {
         {!isLoading && offers.length === 0 && <p className="text-yellow-400/70 text-center">No premium offers available.</p>}
         {!isLoading && offers.map(offer => (
             <motion.div key={offer.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-4 p-3 my-2 bg-black/30 rounded-lg border border-yellow-500/30">
-                {offer.image_url ? <img-replace src={offer.image_url} alt={offer.title} class="w-12 h-12 object-cover rounded" /> : <Crown className="w-12 h-12 text-yellow-400 flex-shrink-0 p-2" />}
+                {offer.image_url ? (
+                  <img 
+                    src={offer.image_url} 
+                    alt={offer.title} 
+                    className="w-12 h-12 object-cover rounded"
+                    onError={(e) => {
+                      e.target.onerror = null; 
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                ) : <Crown className="w-12 h-12 text-yellow-400 flex-shrink-0 p-2" />}
                 <div className="flex-1">
                     <h3 className="text-yellow-300 font-semibold">{offer.title} - ${offer.price}</h3>
                     <p className="text-xs text-yellow-400/60">{offer.description}</p>
