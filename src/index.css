@@ -6,6 +6,38 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 :root {
+  --background: 220 20% 8%; /* Dark blue-gray */
+  --foreground: 120 100% 85%; /* Light green */
+  
+  --card: 220 25% 12%;
+  --card-foreground: 120 100% 90%;
+  
+  --popover: 220 25% 12%;
+  --popover-foreground: 120 100% 90%;
+  
+  --primary: 120 100% 50%; /* Bright green */
+  --primary-foreground: 220 20% 8%; /* Dark for text on primary */
+  
+  --secondary: 280 100% 60%; /* Vibrant purple */
+  --secondary-foreground: 220 20% 95%; /* Light for text on secondary */
+  
+  --muted: 220 15% 20%;
+  --muted-foreground: 120 50% 70%;
+  
+  --accent: 280 100% 70%; /* Brighter purple for accents */
+  --accent-foreground: 220 20% 8%;
+  
+  --destructive: 0 84% 60%; /* Red */
+  --destructive-foreground: 0 0% 98%;
+  
+  --border: 120 30% 25%; /* Muted green border */
+  --input: 220 25% 15%; /* Darker input background */
+  --ring: 120 100% 50%; /* Green ring for focus */
+  
+  --radius: 0.75rem;
+}
+
+.dark {
   --background: 220 20% 8%;
   --foreground: 120 100% 85%;
   --card: 220 25% 12%;
@@ -14,67 +46,138 @@
   --popover-foreground: 120 100% 90%;
   --primary: 120 100% 50%;
   --primary-foreground: 220 20% 8%;
-  --secondary: 180 100% 25%;
-  --secondary-foreground: 120 100% 90%;
+  --secondary: 280 100% 60%;
+  --secondary-foreground: 220 20% 95%;
   --muted: 220 15% 20%;
   --muted-foreground: 120 50% 70%;
   --accent: 280 100% 70%;
   --accent-foreground: 220 20% 8%;
-  --destructive: 0 84% 60%;
+  --destructive: 0 70% 50%; /* Slightly deeper red for dark mode */
   --destructive-foreground: 0 0% 98%;
   --border: 120 30% 25%;
   --input: 220 25% 15%;
   --ring: 120 100% 50%;
-  --radius: 0.75rem;
 }
+
+:root:not(.dark) {
+  --background: 210 40% 98%; /* Very light blue-gray */
+  --foreground: 220 20% 10%; /* Dark gray for text */
+  
+  --card: 0 0% 100%; /* White cards */
+  --card-foreground: 220 20% 10%;
+  
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 20% 10%;
+  
+  --primary: 30 90% 55%; /* Vibrant orange */
+  --primary-foreground: 0 0% 100%; /* White text on primary */
+  
+  --secondary: 200 90% 50%; /* Bright cyan */
+  --secondary-foreground: 220 20% 10%; /* Dark text on secondary */
+  
+  --muted: 210 30% 94%; /* Lighter muted */
+  --muted-foreground: 220 10% 45%;
+  
+  --accent: 330 90% 60%; /* Bright pink/magenta */
+  --accent-foreground: 0 0% 100%;
+  
+  --destructive: 0 80% 60%; /* Red */
+  --destructive-foreground: 0 0% 100%;
+  
+  --border: 210 20% 88%; /* Light gray border */
+  --input: 0 0% 100%; /* White input */
+  --ring: 30 90% 55%; /* Orange ring */
+}
+
 
 * {
   border-color: hsl(var(--border));
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 body {
-  background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #0a0a0f 100%);
+  background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: 'Space Grotesk', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-.space-bg {
+/* Keep space-bg for dark mode, slightly adjust for light */
+.dark .space-bg {
   background: radial-gradient(ellipse at center, rgba(0, 255, 127, 0.1) 0%, transparent 70%),
               radial-gradient(ellipse at 80% 20%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
               radial-gradient(ellipse at 20% 80%, rgba(0, 191, 255, 0.1) 0%, transparent 50%);
 }
+.space-bg { /* Light mode space bg */
+  background: radial-gradient(ellipse at center, hsla(var(--primary), 0.1) 0%, transparent 70%),
+              radial-gradient(ellipse at 80% 20%, hsla(var(--secondary), 0.15) 0%, transparent 50%),
+              radial-gradient(ellipse at 20% 80%, hsla(var(--accent), 0.1) 0%, transparent 50%);
+}
 
-.neon-glow {
+
+.neon-glow { /* General glow, might need light/dark variants if too strong */
+  box-shadow: 0 0 20px hsla(var(--primary), 0.3),
+              0 0 40px hsla(var(--primary), 0.2),
+              0 0 60px hsla(var(--primary), 0.1);
+}
+.dark .neon-glow {
   box-shadow: 0 0 20px rgba(0, 255, 127, 0.3),
               0 0 40px rgba(0, 255, 127, 0.2),
               0 0 60px rgba(0, 255, 127, 0.1);
 }
 
-.neon-text {
+
+.neon-text { /* Green neon text for dark mode */
   text-shadow: 0 0 10px rgba(0, 255, 127, 0.8),
                0 0 20px rgba(0, 255, 127, 0.6),
                0 0 30px rgba(0, 255, 127, 0.4);
 }
+.dark .neon-text-purple { /* Purple neon text variant for dark mode if needed */
+   text-shadow: 0 0 10px rgba(170, 100, 255, 0.8),
+               0 0 20px rgba(170, 100, 255, 0.6),
+               0 0 30px rgba(170, 100, 255, 0.4);
+}
+:root:not(.dark) .neon-text { /* Orange neon text for light mode */
+  text-shadow: 0 0 10px hsla(var(--primary), 0.7),
+               0 0 20px hsla(var(--primary), 0.5),
+               0 0 30px hsla(var(--primary), 0.3);
+}
 
-.cyber-grid {
+
+.cyber-grid { /* General grid, light/dark variants */
+  background-image: 
+    linear-gradient(hsla(var(--primary), 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, hsla(var(--primary), 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+.dark .cyber-grid {
   background-image: 
     linear-gradient(rgba(0, 255, 127, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 255, 127, 0.1) 1px, transparent 1px);
-  background-size: 50px 50px;
 }
 
-.hologram {
+
+.hologram { /* Hologram might need subtle light/dark adjustments */
+  background: linear-gradient(45deg, 
+    hsla(var(--primary), 0.05) 0%, 
+    hsla(var(--secondary), 0.05) 25%, 
+    hsla(var(--accent), 0.05) 50%, 
+    hsla(var(--primary) / 0.05) 75%, /* Example using primary again with alpha */
+    hsla(var(--secondary), 0.05) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid hsla(var(--border));
+}
+.dark .hologram {
   background: linear-gradient(45deg, 
     rgba(0, 255, 127, 0.1) 0%, 
     rgba(138, 43, 226, 0.1) 25%, 
     rgba(0, 191, 255, 0.1) 50%, 
     rgba(255, 20, 147, 0.1) 75%, 
     rgba(0, 255, 127, 0.1) 100%);
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(0, 255, 127, 0.3);
 }
+
 
 .floating {
   animation: float 6s ease-in-out infinite;
@@ -82,7 +185,7 @@ body {
 
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+  50% { transform: translateY(-10px); } /* Reduced float for potentially lighter elements */
 }
 
 .pulse-glow {
@@ -90,6 +193,10 @@ body {
 }
 
 @keyframes pulseGlow {
+  from { box-shadow: 0 0 15px hsla(var(--primary), 0.3); } /* Adjusted for variable primary color */
+  to { box-shadow: 0 0 30px hsla(var(--primary), 0.5); }
+}
+.dark @keyframes pulseGlow {
   from { box-shadow: 0 0 20px rgba(0, 255, 127, 0.3); }
   to { box-shadow: 0 0 40px rgba(0, 255, 127, 0.6); }
 }
@@ -103,22 +210,85 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
-.glass-morphism {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.glass-morphism { /* General glass effect, light/dark adjustments */
+  background: hsla(var(--card) / 0.5); /* Use card color with alpha */
+  backdrop-filter: blur(15px); /* Slightly more blur */
+  border: 1px solid hsla(var(--border) / 0.7); /* Border with alpha */
 }
+.dark .glass-morphism {
+  background: rgba(20, 20, 30, 0.6); /* Darker, more opaque for dark mode */
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 255, 127, 0.2); /* Subtler green border */
+}
+
 
 .tech-border {
   position: relative;
   border: 2px solid transparent;
-  background: linear-gradient(45deg, rgba(0, 255, 127, 0.3), rgba(138, 43, 226, 0.3)) border-box;
+  background: linear-gradient(45deg, hsla(var(--primary), 0.3), hsla(var(--secondary), 0.3)) border-box;
   -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: destination-out;
   mask-composite: exclude;
 }
+.dark .tech-border {
+   background: linear-gradient(45deg, rgba(0, 255, 127, 0.3), rgba(138, 43, 226, 0.3)) border-box;
+}
+
+/* Shadcn UI component specific dark mode overrides if needed */
+.dark .shadcn-button-primary { /* Example for a custom primary button */
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+:root:not(.dark) .shadcn-button-primary {
+   background-color: hsl(var(--primary));
+   color: hsl(var(--primary-foreground));
+}
+
+/* Update input styles for better dark/light contrast */
+input, textarea, select {
+  background-color: hsl(var(--input));
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--border));
+}
+input:focus, textarea:focus, select:focus {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 2px hsla(var(--ring), 0.3);
+}
+input::placeholder, textarea::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Ensure card backgrounds are distinct */
+.dark .card {
+  background-color: hsl(var(--card));
+}
+:root:not(.dark) .card {
+  background-color: hsl(var(--card));
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Softer shadow for light mode cards */
+}
+
+/* Ensure toast notifications are styled for both themes */
+.dark [data-sonner-toast][data-type="success"] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+:root:not(.dark) [data-sonner-toast][data-type="success"] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+.dark [data-sonner-toast][data-type="error"] {
+  background-color: hsl(var(--destructive)) !important;
+  color: hsl(var(--destructive-foreground)) !important;
+  border-color: hsl(var(--destructive)) !important;
+}
+:root:not(.dark) [data-sonner-toast][data-type="error"] {
+  background-color: hsl(var(--destructive)) !important;
+  color: hsl(var(--destructive-foreground)) !important;
+  border-color: hsl(var(--destructive)) !important;
+                 }
