@@ -23,7 +23,6 @@ const ChannelsPage = () => {
     icon_name: 'Link',
     description: '',
   });
-  const [isMounted, setIsMounted] = useState(false);
 
   const fetchChannels = async () => {
     setIsLoading(true);
@@ -49,11 +48,9 @@ const ChannelsPage = () => {
   };
 
   useEffect(() => {
-    setIsMounted(true);
     if (user !== undefined) {
       fetchChannels();
     }
-    return () => setIsMounted(false);
   }, [user]);
 
   const handleInputChange = (e) => {
@@ -78,7 +75,7 @@ const ChannelsPage = () => {
     } else {
       resetForm();
     }
-    setIsDialogOpen(true);
+    setIsDialogOpen(true); // This is the key line that opens the dialog
   };
 
   const handleSubmit = async (e) => {
@@ -143,10 +140,6 @@ const ChannelsPage = () => {
     }
     return <LucideIcons.Link className="w-8 h-8" />;
   };
-
-  if (!isMounted) {
-    return null;
-  }
 
   if (user === undefined) {
     return (
@@ -242,10 +235,13 @@ const ChannelsPage = () => {
           </div>
         )}
 
+        {/* Dialog for adding/editing channels */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="hologram border-green-500/30 dark:border-purple-500/30">
             <DialogHeader>
-              <DialogTitle className="text-green-300 dark:text-purple-300">{editingChannel ? 'Edit' : 'Add New'} Channel</DialogTitle>
+              <DialogTitle className="text-green-300 dark:text-purple-300">
+                {editingChannel ? 'Edit' : 'Add New'} Channel
+              </DialogTitle>
               <DialogDescription className="text-green-400/70 dark:text-purple-400/70">
                 {editingChannel ? 'Update the details for this channel.' : 'Enter details for the new channel.'}
               </DialogDescription>
@@ -253,20 +249,38 @@ const ChannelsPage = () => {
             <form onSubmit={handleSubmit} className="space-y-4 py-4">
               <div>
                 <Label htmlFor="name" className="text-green-400 dark:text-purple-400">Channel Name</Label>
-                <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required 
-                      className="mt-1 bg-black/50 border-green-500/50 dark:border-purple-500/50 text-green-100 dark:text-purple-100 placeholder:text-green-400/60 dark:placeholder:text-purple-400/60" />
+                <Input 
+                  id="name" 
+                  name="name" 
+                  value={formData.name} 
+                  onChange={handleInputChange} 
+                  required 
+                  className="mt-1 bg-black/50 border-green-500/50 dark:border-purple-500/50 text-green-100 dark:text-purple-100 placeholder:text-green-400/60 dark:placeholder:text-purple-400/60" 
+                />
               </div>
               <div>
                 <Label htmlFor="url" className="text-green-400 dark:text-purple-400">Channel URL</Label>
-                <Input id="url" name="url" type="url" value={formData.url} onChange={handleInputChange} required 
-                      className="mt-1 bg-black/50 border-green-500/50 dark:border-purple-500/50 text-green-100 dark:text-purple-100 placeholder:text-green-400/60 dark:placeholder:text-purple-400/60" />
+                <Input 
+                  id="url" 
+                  name="url" 
+                  type="url" 
+                  value={formData.url} 
+                  onChange={handleInputChange} 
+                  required 
+                  className="mt-1 bg-black/50 border-green-500/50 dark:border-purple-500/50 text-green-100 dark:text-purple-100 placeholder:text-green-400/60 dark:placeholder:text-purple-400/60" 
+                />
               </div>
               <div>
                 <Label htmlFor="icon_name" className="text-green-400 dark:text-purple-400">Icon Name (Lucide)</Label>
                 <div className="flex items-center gap-2">
-                  <Input id="icon_name" name="icon_name" value={formData.icon_name} onChange={handleInputChange} 
-                        placeholder="e.g., Youtube, Twitter, Link"
-                        className="mt-1 flex-grow bg-black/50 border-green-500/50 dark:border-purple-500/50 text-green-100 dark:text-purple-100 placeholder:text-green-400/60 dark:placeholder:text-purple-400/60" />
+                  <Input 
+                    id="icon_name" 
+                    name="icon_name" 
+                    value={formData.icon_name} 
+                    onChange={handleInputChange} 
+                    placeholder="e.g., Youtube, Twitter, Link"
+                    className="mt-1 flex-grow bg-black/50 border-green-500/50 dark:border-purple-500/50 text-green-100 dark:text-purple-100 placeholder:text-green-400/60 dark:placeholder:text-purple-400/60" 
+                  />
                   <IconPreview className="w-6 h-6 text-green-400 dark:text-purple-400 mt-1" />
                 </div>
                 <p className="text-xs text-green-400/70 dark:text-purple-400/70 mt-1">
@@ -275,8 +289,13 @@ const ChannelsPage = () => {
               </div>
               <div>
                 <Label htmlFor="description" className="text-green-400 dark:text-purple-400">Description (Optional)</Label>
-                <Textarea id="description" name="description" value={formData.description} onChange={handleInputChange} 
-                          className="mt-1 bg-black/50 border-green-500/50 dark:border-purple-500/50 text-green-100 dark:text-purple-100 placeholder:text-green-400/60 dark:placeholder:text-purple-400/60" />
+                <Textarea 
+                  id="description" 
+                  name="description" 
+                  value={formData.description} 
+                  onChange={handleInputChange} 
+                  className="mt-1 bg-black/50 border-green-500/50 dark:border-purple-500/50 text-green-100 dark:text-purple-100 placeholder:text-green-400/60 dark:placeholder:text-purple-400/60" 
+                />
               </div>
               <DialogFooter>
                 <DialogClose asChild>
