@@ -52,15 +52,6 @@ const PremiumPage = () => {
     whatsappNumber: "+22896342434"
   };
 
-  const renderFallbackIcon = (index) => {
-    switch(index % 3) {
-      case 0: return <Eye className="w-10 h-10"/>;
-      case 1: return <Skull className="w-10 h-10"/>;
-      case 2: return <Zap className="w-10 h-10"/>;
-      default: return <Eye className="w-10 h-10"/>;
-    }
-  };
-
   return (
     <div className="space-y-10">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
@@ -177,36 +168,31 @@ const PremiumPage = () => {
                 {premiumOfferDetails.map((offer, index) => (
                   <motion.div key={offer.id || index} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + index * 0.1 }}>
                     <Card className="hologram neon-glow h-full hover:shadow-2xl transition-all duration-300 border-yellow-500/30 dark:border-yellow-400/30 flex flex-col">
-                      <div className="w-full h-48 relative overflow-hidden rounded-t-md">
-                        {offer.image_url ? (
+                      {offer.image_url ? (
+                        <div className="w-full h-48 overflow-hidden rounded-t-md">
                           <img 
-                            src={offer.image_url}
-                            alt={offer.title || 'Premium Benefit Image'}
+                            src={offer.image_url} 
+                            alt={offer.title || 'Premium Benefit'} 
                             className="w-full h-full object-cover"
-                            loading="lazy"
                             onError={(e) => {
                               e.target.onerror = null;
-                              e.target.style.display = 'none';
-                              const fallback = document.createElement('div');
-                              fallback.className = 'w-full h-full flex items-center justify-center bg-black/30 dark:bg-neutral-700/30';
-                              fallback.innerHTML = `
-                                <div class="p-3 bg-yellow-500/20 dark:bg-yellow-400/20 rounded-full text-yellow-400 dark:text-yellow-300">
-                                  ${renderFallbackIcon(index).props.className.includes('Eye') ? '<Eye class="w-10 h-10"/>' : 
-                                    renderFallbackIcon(index).props.className.includes('Skull') ? '<Skull class="w-10 h-10"/>' : 
-                                    '<Zap class="w-10 h-10"/>'}
+                              e.target.src = ''; // You could set a fallback image here if needed
+                              e.target.parentElement.className = "w-full h-48 bg-black/30 dark:bg-neutral-700/30 rounded-t-md flex items-center justify-center";
+                              e.target.parentElement.innerHTML = `
+                                <div className="p-3 bg-yellow-500/20 dark:bg-yellow-400/20 rounded-full text-yellow-400 dark:text-yellow-300">
+                                  ${index % 3 === 0 ? '<Eye className="w-10 h-10"/>' : index % 3 === 1 ? '<Skull className="w-10 h-10"/>' : '<Zap className="w-10 h-10"/>'}
                                 </div>
                               `;
-                              e.target.parentNode.replaceChild(fallback, e.target);
                             }}
                           />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-black/30 dark:bg-neutral-700/30">
-                            <div className="p-3 bg-yellow-500/20 dark:bg-yellow-400/20 rounded-full text-yellow-400 dark:text-yellow-300">
-                              {renderFallbackIcon(index)}
-                            </div>
+                        </div>
+                      ) : (
+                        <div className="w-full h-48 bg-black/30 dark:bg-neutral-700/30 rounded-t-md flex items-center justify-center">
+                          <div className="p-3 bg-yellow-500/20 dark:bg-yellow-400/20 rounded-full text-yellow-400 dark:text-yellow-300">
+                            {index % 3 === 0 ? <Eye className="w-10 h-10"/> : index % 3 === 1 ? <Skull className="w-10 h-10"/> : <Zap className="w-10 h-10"/>}
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       <CardHeader>
                         <CardTitle className="text-yellow-300 dark:text-yellow-200 text-xl">{offer.title}</CardTitle>
                       </CardHeader>
@@ -289,4 +275,13 @@ const PremiumPage = () => {
                         Premium access is granted manually by an administrator after payment confirmation. Please allow some time for processing. Ensure your payment screenshot clearly shows the transaction details and that you provide your registered email address.
                     </p>
                 </div>
-       
+              </CardContent>
+            </Card>
+          </motion.div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default PremiumPage;
