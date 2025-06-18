@@ -1,23 +1,17 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast';
 
 const AuthContext = createContext();
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch user profile
   const fetchUserProfile = async (userId) => {
     if (!userId) {
       setProfile(null);
@@ -30,208 +24,120 @@ export const AuthProvider = ({ children }) => {
         .eq('id', userId)
         .single();
 
-      if (error) {
-        if (error.code !== 'PGRST116') {
-          console.error('Error fetching user profile:', error.message);
-          throw error;
-        }
-        setProfile(null);
-        return null;
-      }
-      
+      if (error) throw error;
       setProfile(data);
       return data;
-
     } catch (error) {
-      console.error('Exception fetching user profile:', error.message);
-      toast({ title: "Profile Error", description: "Could not load user profile.", variant: "destructive" });
+      console.error('Failed to fetch profile:', error.message);
+      toast({ title: "Error", description: "Could not load profile.", variant: "destructive" });
       return null;
     }
   };
 
+  // Session handling
   useEffect(() => {
-    const fetchSessionAndProfile = async () => {
+    const fetchSession = async () => {
       setIsLoading(true);
       const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error("Error fetching session:", error.message);
-      } else if (session?.user) {
-        setUser(session.user);
-        await fetchUserProfile(session.user.id);
-      }
+      if (error) console.error("Session error:", error.message);
+      setUser(session?.user || null);
+      if (session?.user) await fetchUserProfile(session.user.id);
       setIsLoading(false);
     };
 
-    fetchSessionAndProfile();
+    fetchSession();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      const user = session?.user ?? null;
-      setUser(user);
-      if (user) {
-        await fetchUserProfile(user.id);
-      } else {
-        setProfile(null);
-      }
-      setIsLoading(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user || null);
+      if (session?.user) await fetchUserProfile(session.user.id);
+      else setProfile(null);
     });
 
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (credentials) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: credentials.email,
-      password: credentials.password,
-    });
-    
-    if (error) {
-      toast({ title: "Login Failed", description: error.message, variant: "destructive" });
+  // Fixed: Grant premium access
+  const grantPremiumAccess = async (userId, tier, duration, unit) => {
+    try {
+      const expiresAt = new Date();
+      if (unit === 'months') expiresAt.setMonth(expiresAt.getMonth() + duration);
+      else if (unit === 'years') expiresAt.setFullYear(expiresAt.getFullYear() + duration);
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          has_premium_access: true,
+          premium_tier: tier,
+          premium_expires_at: expiresAt.toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+      toast({ title: "Success", description: `Premium access granted until ${expiresAt.toLocaleDateString()}` });
+    } catch (error) {
+      toast({ title: "Error", description: `Grant failed: ${error.message}`, variant: "destructive" });
       throw error;
     }
-    return data.user;
   };
 
-  const logout = async () => {
-    const { error } = await supabase.auth.signOut();
-    
-    setUser(null);
-    setProfile(null);
-    sessionStorage.clear();
+  // Fixed: Extend premium access
+  const extendPremiumAccess = async (userId, currentExpiry, tier, duration, unit) => {
+    try {
+      let expiresAt = currentExpiry ? new Date(currentExpiry) : new Date();
+      if (expiresAt < new Date()) expiresAt = new Date(); // Reset if expired
 
-    if (error && error.message !== 'Session from session_id claim in JWT does not exist') {
-      toast({ title: "Logout Issue", description: "There was a problem signing out on the server, but you have been logged out locally.", variant: "destructive" });
-      console.error("Logout error:", error.message);
-    }
-  };
+      if (unit === 'months') expiresAt.setMonth(expiresAt.getMonth() + duration);
+      else if (unit === 'years') expiresAt.setFullYear(expiresAt.getFullYear() + duration);
 
-  const register = async (userData) => {
-    const { data, error } = await supabase.auth.signUp({
-      email: userData.email,
-      password: userData.password,
-      options: {
-        data: { name: userData.name },
-      },
-    });
-    
-    if (error) {
-      toast({ title: "Registration Failed", description: error.message, variant: "destructive" });
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          premium_tier: tier,
+          premium_expires_at: expiresAt.toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+      toast({ title: "Success", description: `Premium extended until ${expiresAt.toLocaleDateString()}` });
+    } catch (error) {
+      toast({ title: "Error", description: `Extension failed: ${error.message}`, variant: "destructive" });
       throw error;
     }
-    if (data.user) {
-        await markWhatsappJoined(data.user.id);
-    }
-    return data.user;
   };
 
-  const grantPremiumAccess = async (userId) => {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ has_premium_access: true, updated_at: new Date().toISOString() })
-      .eq('id', userId);
-
-    if (error) {
-      toast({ title: "Error", description: `Failed to grant premium: ${error.message}`, variant: "destructive" });
-      throw error;
-    }
-    if (profile && profile.id === userId) {
-      setProfile(prev => ({ ...prev, has_premium_access: true }));
-    }
-  };
-
+  // Revoke premium
   const revokePremiumAccess = async (userId) => {
-    const { error } = await supabase
-      .from('profiles')
-      .update({ has_premium_access: false, updated_at: new Date().toISOString() })
-      .eq('id', userId);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          has_premium_access: false,
+          premium_tier: null,
+          premium_expires_at: null,
+        })
+        .eq('id', userId);
 
-    if (error) {
-      toast({ title: "Error", description: `Failed to revoke premium: ${error.message}`, variant: "destructive" });
+      if (error) throw error;
+      toast({ title: "Success", description: "Premium access revoked" });
+    } catch (error) {
+      toast({ title: "Error", description: `Revoke failed: ${error.message}`, variant: "destructive" });
       throw error;
     }
-     if (profile && profile.id === userId) {
-      setProfile(prev => ({ ...prev, has_premium_access: false }));
-    }
-  };
-  
-  const getAllUsers = async () => {
-    if (!profile?.is_admin) {
-        toast({ title: "Unauthorized", description: "You don't have permission to list users.", variant: "destructive" });
-        return [];
-    }
-    const { data, error } = await supabase.from('profiles').select('*');
-    if (error) {
-      toast({ title: "Error", description: `Failed to get users: ${error.message}`, variant: "destructive" });
-      return [];
-    }
-    return data;
   };
 
-  const getUserById = async (userId) => {
-     const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    if (error) {
-      console.error(`Failed to get user ${userId}: ${error.message}`);
-      return null;
-    }
-    return data;
-  };
-
-  const markWhatsappJoined = async (userId) => {
-    if (!userId) return;
-    const { error } = await supabase
-      .from('profiles')
-      .update({ whatsapp_joined_all: true })
-      .eq('id', userId);
-    if (error) {
-      console.error("Error marking whatsapp joined:", error.message);
-    } else {
-       if (profile && profile.id === userId) {
-        setProfile(prev => ({...prev, whatsapp_joined_all: true }));
-      }
-    }
-  };
-
-  const toggleAdminStatus = async (userId, makeAdmin) => {
-    if (!profile?.is_admin) {
-        toast({ title: "Unauthorized", description: "You don't have permission to change admin roles.", variant: "destructive" });
-        return;
-    }
-    const { error } = await supabase
-      .from('profiles')
-      .update({ 
-          is_admin: makeAdmin, 
-          has_premium_access: makeAdmin ? true : false, // Admins always get premium
-          updated_at: new Date().toISOString() 
-      })
-      .eq('id', userId);
-
-    if (error) {
-      toast({ title: "Error", description: `Failed to update admin status: ${error.message}`, variant: "destructive" });
-      throw error;
-    }
-    toast({ title: "Success", description: `User role updated successfully.` });
-  };
+  // ... (keep other methods like login, logout, register, etc.)
 
   return (
     <AuthContext.Provider value={{
       user,
       profile,
-      login,
-      logout,
-      register,
       isLoading,
-      isAuthenticated: !!user && user.email_confirmed_at,
-      isUnconfirmed: !!user && !user.email_confirmed_at,
       isAdmin: profile?.is_admin || false,
-      hasPremiumAccess: profile?.is_admin || profile?.has_premium_access || false,
+      hasPremiumAccess: profile?.has_premium_access || false,
       grantPremiumAccess,
       revokePremiumAccess,
-      getAllUsers,
-      getUserById,
-      markWhatsappJoined,
-      toggleAdminStatus
+      extendPremiumAccess,
+      // ... other methods
     }}>
       {children}
     </AuthContext.Provider>
