@@ -1,13 +1,16 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCourses } from '@/hooks/useCourses';
 import { useAuth } from '@/hooks/useAuth';
-import { BookOpen, Users, Crown } from 'lucide-react';
+import { BookOpen, Users, Crown, ShieldAlert, BellRing } from 'lucide-react';
 import ManageCourses from '@/components/AdminPanel/ManageCourses';
 import ManagePremiumOffers from '@/components/AdminPanel/ManagePremiumOffers';
 import ManageUserRoles from '@/components/AdminPanel/ManageUserRoles';
 import ManageNotifications from '@/components/AdminPanel/ManageNotifications';
+import ViewPremiumUsers from '@/components/AdminPanel/ViewPremiumUsers';
+import ViewAdminUsers from '@/components/AdminPanel/ViewAdminUsers';
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/components/ui/use-toast';
 
@@ -64,11 +67,24 @@ const AdminPanel = () => {
     fetchAdminPanelData();
   }, [fetchAdminPanelData]);
 
+  const activePremiumUsersCount = usersList.filter(u => {
+    if (u.is_admin && u.premium_tier === 'admin_perk') return true;
+    if (u.has_premium_access) {
+      if (!u.premium_expires_at && u.premium_tier !== 'admin_perk') return true;
+      if (u.premium_expires_at) return new Date(u.premium_expires_at) > new Date();
+    }
+    return false;
+  }).length;
+
+  const adminUsersCount = usersList.filter(u => u.is_admin).length;
+
 
   const stats = {
     totalCourses: courses.length,
     totalUsers: usersList.length,
-    premiumUsers: usersList.filter(u => u.has_premium_access || u.is_admin).length
+    premiumUsers: activePremiumUsersCount,
+    adminUsers: adminUsersCount,
+    activeNotifications: allNotifications.filter(n => !n.deleted_at && (!n.expires_at || new Date(n.expires_at) > new Date())).length,
   };
 
   return (
@@ -80,16 +96,23 @@ const AdminPanel = () => {
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {[
           { title: 'Total Courses', value: stats.totalCourses, icon: <BookOpen className="w-6 h-6 text-green-400" /> },
           { title: 'Total Users', value: stats.totalUsers, icon: <Users className="w-6 h-6 text-blue-400" /> },
-          { title: 'Premium Users', value: stats.premiumUsers, icon: <Crown className="w-6 h-6 text-yellow-400" /> }
+          { title: 'Premium Users', value: stats.premiumUsers, icon: <Crown className="w-6 h-6 text-yellow-400" /> },
+          { title: 'Admin Users', value: stats.adminUsers, icon: <ShieldAlert className="w-6 h-6 text-purple-400" /> },
+          { title: 'Active Notifications', value: stats.activeNotifications, icon: <BellRing className="w-6 h-6 text-pink-400" /> }
         ].map((stat, idx) => (
           <motion.div key={idx} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 * (idx + 1) }}>
-            <Card className="hologram neon-glow"><CardContent className="p-6"><div className="flex items-center gap-4"><div className="p-3 bg-black/30 rounded-full">{stat.icon}</div><div><p className="text-green-400/80 text-sm">{stat.title}</p><p className="text-2xl font-bold text-green-300">{stat.value}</p></div></div></CardContent></Card>
+            <Card className="hologram neon-glow h-full"><CardContent className="p-6 flex flex-col justify-between h-full"><div className="flex items-center gap-4"><div className="p-3 bg-black/30 rounded-full">{stat.icon}</div><div><p className="text-green-400/80 text-sm">{stat.title}</p><p className="text-2xl font-bold text-green-300">{stat.value}</p></div></div></CardContent></Card>
           </motion.div>
         ))}
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ViewPremiumUsers users={usersList} isLoading={isLoadingUsers} />
+        <ViewAdminUsers users={usersList} isLoading={isLoadingUsers} />
       </div>
 
       <ManageNotifications 
@@ -120,3 +143,4 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+            
